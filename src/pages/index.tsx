@@ -6,6 +6,7 @@ import SignIn from "./signIn";
 
 import { api } from "~/utils/api";
 import { createId } from "@paralleldrive/cuid2";
+import { create } from "domain";
 
 type formIdNameModel = {
   formId: string;
@@ -14,6 +15,7 @@ type formIdNameModel = {
 
 export default function Home() {
   const { data: sessionData } = useSession();
+
   const hello = api.form.getUsersForms.useQuery({
     userId: sessionData?.user.id!,
   });
@@ -67,10 +69,15 @@ export default function Home() {
             </a>
           </div>
         </div>
-
-        <div className="mt-5 bg-red-200 px-24">
+        <div className="mx-24 mt-3 border-b text-2xl font-bold">Forms</div>
+        <div className="mt-5 flex gap-10 px-24">
           {arrayOfFormIdName.map((form) => (
-            <a href={`/form/${form.formId}`}>{form.name}</a>
+            <a
+              className=" flex h-64 w-44 items-center justify-center  rounded-lg bg-gray-300 text-center text-2xl text-white shadow-md  duration-200 hover:scale-105"
+              href={`/form/${form.formId}`}
+            >
+              {form.name}
+            </a>
           ))}
         </div>
       </main>

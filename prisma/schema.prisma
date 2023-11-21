@@ -15,7 +15,7 @@ model Form {
     formId    String      
     name      String
     createdAt DateTime @default(now())
-    formObject String[] 
+    formObject Json
 
     createdBy   User  @relation(fields: [createdById], references: [id])
     createdById String
