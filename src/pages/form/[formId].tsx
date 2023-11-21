@@ -106,8 +106,8 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
           question: `Question ${questionNumber}`,
           inputType: "checkbox",
           response: {
-            questions: ["sd"],
-            selected: ["s"],
+            questions: ["Option 1", "Option 2", "Option 3", "Option 4"],
+            selected: [],
           },
         },
       ]);
@@ -128,11 +128,38 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
         newArray[questionId]!.question = data;
       } else if (typeof data == "object") {
         if (data.selected != undefined) {
-          newArray[questionId]!.response.selected = data.selected;
+          if (data.type == "radio") {
+            newArray[questionId]!.response.selected = data.selected;
+          } else {
+            if (
+              newArray[questionId]!.response.selected.includes(data.selected)
+            ) {
+              let tempArr = newArray[questionId]!.response.selected.filter(
+                (ans: string) => ans !== data.selected,
+              );
+
+              newArray[questionId]!.response.selected = tempArr;
+              console.log(tempArr);
+            } else {
+              let tempArr = newArray[questionId]!.response.selected.push(
+                data.selected,
+              );
+              newArray[questionId]!.response.selected = tempArr;
+            }
+          }
         } else if (data.question != undefined) {
-          console.log(newArray[questionId]!.response.questions[data.index]);
-          newArray[questionId]!.response.questions[data.index] = data.question;
-          console.log(newArray[questionId]!.response.selected);
+          if (
+            newArray[questionId]!.response.questions.indexOf(
+              newArray[questionId]!.response.selected,
+            ) == data.index
+          ) {
+            newArray[questionId]!.response.questions[data.index] =
+              data.question;
+            newArray[questionId]!.response.selected = data.question;
+          } else {
+            newArray[questionId]!.response.questions[data.index] =
+              data.question;
+          }
         }
       } else {
         newArray[questionId]!.response = data;
@@ -232,7 +259,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
                     <input
                       className="mr-2"
                       size={10}
-                      type="checkbox"
+                      type="radio"
                       name={question}
                       id={question}
                       checked={question == data.response.selected}
@@ -256,13 +283,49 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
                     />
                   </label>
                 ))}
+                <p className="mt-3 text-sm opacity-50">
+                  Multiple Choice: Only one can be selected
+                </p>
               </div>
             ) : (
-              <div></div>
+              <div className="flex flex-col">
+                {data.response.questions.map((question, indexOfQuestion) => (
+                  <label>
+                    <input
+                      className="mr-2"
+                      size={10}
+                      type="checkbox"
+                      name={question}
+                      id={question}
+                      checked={data.response.selected.includes(question)}
+                      onChange={() => {
+                        mutateQuestion(data.id, "response", {
+                          type: "check",
+                          selected: question,
+                        });
+                      }}
+                    />
+                    <input
+                      className="bg-gray-200 outline-none"
+                      type="text"
+                      value={question}
+                      onChange={(e) => {
+                        mutateQuestion(data.id, "response", {
+                          index: indexOfQuestion,
+                          question: e.target.value,
+                        });
+                      }}
+                    />
+                  </label>
+                ))}
+                <p className="mt-3 text-sm opacity-50">
+                  Multi Select: Multiple options can be selected
+                </p>
+              </div>
             )}
           </div>
         ))}
-        <div className="mt-4 flex w-1/2 grow justify-end">
+        <div className="mb-10 mt-4 flex w-1/2 grow justify-end">
           {showAddOptions ? (
             <div className="flex h-fit flex-col rounded-lg bg-blue-500  text-white">
               <button
@@ -281,7 +344,12 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
               >
                 Multiple Choice
               </button>
-              <button className=" px-2 py-2 hover:bg-blue-200 hover:text-blue-500">
+              <button
+                onClick={() => {
+                  addQuestion("checkbox");
+                }}
+                className=" px-2 py-2 hover:bg-blue-200 hover:text-blue-500"
+              >
                 Checkbox
               </button>
               <button
@@ -294,7 +362,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
           ) : (
             <button
               onClick={() => setShowAddOptions(true)}
-              className="h-8 w-8 rounded-full border-2 border-blue-500 p-1 text-blue-500 hover:border-blue-200 hover:text-blue-200"
+              className=" h-8 w-8 rounded-full border-2 border-blue-500 p-1 text-blue-500 hover:border-blue-200 hover:text-blue-200"
             >
               <FontAwesomeIcon icon={faPlus} />
             </button>
