@@ -13,28 +13,35 @@ import { signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import SignIn from "../signIn";
 import { api } from "~/utils/api";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useSearchParams } from "next/navigation";
+import { createId } from "@paralleldrive/cuid2";
 
 type inputType = "text" | "radio" | "checkbox";
 
-type checkBoxRadioResponseModel = {
-  questions: string[];
-  selected: string[];
+type radioResponseModel = {
+  options: { id: string; option: string }[];
+  selected: string;
+};
+type checkBoxResponseModel = {
+  id: string;
+  option: string;
+  selected: boolean;
 };
 type questionModel = {
   id: number;
   question: string;
   inputType: inputType;
-  response: string | checkBoxRadioResponseModel;
+  response: string | radioResponseModel | checkBoxResponseModel[];
 };
 type radioCheckSelectChangeModel = {
   type: "radio" | "check";
   selected: string;
 };
 type radioCheckQuestionChangeModel = {
-  index: number;
+  id: number;
   question: string;
 };
 
@@ -62,7 +69,6 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
     if (!isLoading && existFormCall != null) {
       setName(existFormCall?.name);
       setQuestionData(existFormCall?.formObject);
-      console.log(formId);
     } else {
       enableSave();
     }
@@ -86,6 +92,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
         },
       ]);
     } else if (type == "radio") {
+      let selectedId = createId();
       setQuestionData((prevArr) => [
         ...prevArr,
         {
@@ -93,8 +100,13 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
           question: `Question ${questionNumber}`,
           inputType: "radio",
           response: {
-            questions: ["Option 1", "Option 2", "Option 3", "Option 4"],
-            selected: ["Option 1"],
+            options: [
+              { option: "Option 1", id: selectedId },
+              { option: "Option 2", id: createId() },
+              { option: "Option 3", id: createId() },
+              { option: "Option 4", id: createId() },
+            ],
+            selected: selectedId,
           },
         },
       ]);
@@ -105,16 +117,29 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
           id: questionNumber - 1,
           question: `Question ${questionNumber}`,
           inputType: "checkbox",
-          response: {
-            questions: ["Option 1", "Option 2", "Option 3", "Option 4"],
-            selected: [],
-          },
+          response: [
+            { id: createId(), option: "Option 1", selected: true },
+            { id: createId(), option: "Option 2", selected: true },
+            { id: createId(), option: "Option 3", selected: false },
+            { id: createId(), option: "Option 4", selected: false },
+          ],
         },
       ]);
     }
   }
   function enableSave() {
     setSaveIsDisabled(false);
+  }
+  function deleteRadioOption(questionId: number, id: string) {
+    setQuestionData((prevArr) => {
+      const newArray = [...prevArr];
+
+      newArray.forEach((questionObj) => {
+        if (questionObj.id == questionId) {
+          questionObj.response.questions.forEach(option);
+        }
+      });
+    });
   }
   function mutateQuestion(
     questionId: number,
@@ -131,35 +156,33 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
           if (data.type == "radio") {
             newArray[questionId]!.response.selected = data.selected;
           } else {
-            if (
-              newArray[questionId]!.response.selected.includes(data.selected)
-            ) {
-              let tempArr = newArray[questionId]!.response.selected.filter(
-                (ans: string) => ans !== data.selected,
-              );
+            if (Array.isArray(newArray[questionId]!.response.selected)) {
+              if (
+                newArray[questionId]!.response.selected.includes(data.selected)
+              ) {
+                let tempArr = newArray[questionId]!.response.selected.filter(
+                  (ans: string) => ans !== data.selected,
+                );
 
-              newArray[questionId]!.response.selected = tempArr;
-              console.log(tempArr);
-            } else {
-              let tempArr = newArray[questionId]!.response.selected.push(
-                data.selected,
-              );
-              newArray[questionId]!.response.selected = tempArr;
+                newArray[questionId]!.response.selected = tempArr;
+              } else {
+                newArray[questionId]!.response.selected = [
+                  ...newArray[questionId]!.response.selected,
+                  data.selected,
+                ];
+              }
             }
           }
         } else if (data.question != undefined) {
-          if (
-            newArray[questionId]!.response.questions.indexOf(
-              newArray[questionId]!.response.selected,
-            ) == data.index
-          ) {
-            newArray[questionId]!.response.questions[data.index] =
-              data.question;
-            newArray[questionId]!.response.selected = data.question;
-          } else {
-            newArray[questionId]!.response.questions[data.index] =
-              data.question;
-          }
+          newArray.forEach((questionObj) => {
+            if (questionObj.response.options != undefined) {
+              questionObj.response.options.forEach((responseObj) => {
+                if (responseObj.id == data.id) {
+                  responseObj.option = data.question;
+                }
+              });
+            }
+          });
         }
       } else {
         newArray[questionId]!.response = data;
@@ -254,29 +277,29 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
               />
             ) : data.inputType == "radio" ? (
               <div className="flex flex-col">
-                {data.response.questions.map((question, indexOfQuestion) => (
+                {data.response.options.map((questionObj, indexOfQuestion) => (
                   <label>
                     <input
                       className="mr-2"
                       size={10}
                       type="radio"
-                      name={question}
-                      id={question}
-                      checked={question == data.response.selected}
+                      name={questionObj.option}
+                      id={questionObj.id}
+                      checked={data.response.selected == questionObj.id}
                       onChange={() => {
                         mutateQuestion(data.id, "response", {
                           type: "radio",
-                          selected: question,
+                          selected: questionObj.id,
                         });
                       }}
                     />
                     <input
                       className="bg-gray-200 outline-none"
                       type="text"
-                      value={question}
+                      value={questionObj.option}
                       onChange={(e) => {
                         mutateQuestion(data.id, "response", {
-                          index: indexOfQuestion,
+                          id: questionObj.id,
                           question: e.target.value,
                         });
                       }}
@@ -372,5 +395,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
     </>
   );
 };
+
+function radioQuestionView(data);
 
 export default Form;
