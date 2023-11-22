@@ -31,13 +31,16 @@ type checkBoxResponseModel = {
   selected: boolean;
 };
 type questionModel = {
-  id: number;
+  id: string;
   question: string;
   inputType: inputType;
   response: string | radioResponseModel | checkBoxResponseModel[];
 };
 type radioCheckSelectChangeModel = {
   type: "radio" | "check";
+  selected: string;
+};
+type checkSelectChangeModel = {
   selected: string;
 };
 type radioCheckQuestionChangeModel = {
@@ -55,7 +58,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
   });
   const [questionData, setQuestionData] = useState<questionModel[]>([
     {
-      id: 0,
+      id: createId(),
       question: "Question 1",
       inputType: "text",
       response: "",
@@ -78,6 +81,28 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
   if (sessionData == null) {
     return <SignIn />;
   }
+
+  // Example type guards
+  function isStringResponse(response: any): response is string {
+    return typeof response === "string";
+  }
+
+  function isRadioResponse(response: any): response is radioResponseModel {
+    return (
+      typeof response === "object" &&
+      response !== null &&
+      "selected" in response
+    );
+  }
+
+  function isCheckBoxResponse(
+    response: any,
+  ): response is checkBoxResponseModel[] {
+    return (
+      Array.isArray(response) && response.every((item) => "selected" in item)
+    );
+  }
+
   function addQuestion(type: inputType) {
     setShowAddOptions(false);
     let questionNumber = questionData.length + 1;
@@ -85,7 +110,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
       setQuestionData((prevArr) => [
         ...prevArr,
         {
-          id: questionNumber - 1,
+          id: createId(),
           question: `Question ${questionNumber}`,
           inputType: "text",
           response: "",
@@ -96,7 +121,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
       setQuestionData((prevArr) => [
         ...prevArr,
         {
-          id: questionNumber - 1,
+          id: createId(),
           question: `Question ${questionNumber}`,
           inputType: "radio",
           response: {
@@ -114,7 +139,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
       setQuestionData((prevArr) => [
         ...prevArr,
         {
-          id: questionNumber - 1,
+          id: createId(),
           question: `Question ${questionNumber}`,
           inputType: "checkbox",
           response: [
@@ -127,51 +152,136 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
       ]);
     }
   }
+  function deleteQuestion(questionId: string) {
+    setQuestionData((prevArr) => {
+      let newArray = [...prevArr];
+
+      return newArray;
+    });
+  }
   function enableSave() {
     setSaveIsDisabled(false);
   }
-  function deleteRadioOption(questionId: number, id: string) {
+  function deleteRadioOption(questionId: string, id: string) {
     setQuestionData((prevArr) => {
       const newArray = [...prevArr];
 
-      newArray.forEach((questionObj) => {
+      newArray.forEach((questionObj, index) => {
         if (questionObj.id == questionId) {
-          questionObj.response.questions.forEach(option);
+          let tempOptionsArr: { id: string; option: string }[] = [];
+          questionObj.response.options.forEach(
+            (optionsObj: { id: string; option: string }) => {
+              if (optionsObj.id != id) {
+                tempOptionsArr.push(optionsObj);
+              }
+            },
+          );
+          newArray[index].response.options = tempOptionsArr;
         }
       });
+      return newArray;
     });
   }
+  const mutateCheckQuestion = {
+    select: (questionId: string, selected: string) => {
+      let renderCount = 0;
+      setQuestionData((prevArr) => {
+        if (renderCount > 0) return [...prevArr];
+        renderCount++;
+        let newArray = [...prevArr];
+        newArray.forEach((questionObj: questionModel, index) => {
+          if (questionObj.id == questionId) {
+            newArray[index]?.response.forEach(
+              (optionObj: checkBoxResponseModel, optionObjIndex: number) => {
+                if (optionObj.id == selected) {
+                  newArray[index].response[optionObjIndex].selected =
+                    !newArray[index].response[optionObjIndex].selected;
+                }
+              },
+            );
+          }
+        });
+        return newArray;
+      });
+    },
+    delete: (questionId: string, optionId: string) => {
+      //doesnt delete for some reason
+      setQuestionData((prevArr) => {
+        const newArray = [...prevArr];
+
+        newArray.forEach((questionObj, index) => {
+          if (
+            questionObj.id == questionId &&
+            isCheckBoxResponse(questionObj.response) &&
+            newArray[index] != undefined &&
+            isCheckBoxResponse(newArray[index]?.response)
+          ) {
+            let tempOptionsArr: {
+              id: string;
+              option: string;
+              selected: boolean;
+            }[] = [];
+            questionObj.response.forEach((optionObj: checkBoxResponseModel) => {
+              if (optionObj.id != optionId) {
+                tempOptionsArr.push(optionObj);
+              }
+            });
+
+            newArray[index].response = tempOptionsArr;
+          }
+        });
+        return newArray;
+      });
+    },
+  };
+
   function mutateQuestion(
-    questionId: number,
+    questionId: string,
     questionOrResponse: "question" | "response",
     data: string | radioCheckSelectChangeModel | radioCheckQuestionChangeModel,
   ) {
+    let renderCount = 0;
     setQuestionData((prevArr) => {
+      if (renderCount > 0) {
+        return [...prevArr];
+      }
+      renderCount++;
       const newArray = [...prevArr];
 
       if (questionOrResponse == "question" && typeof data != "object") {
-        newArray[questionId]!.question = data;
+        //To Edit Questions
+        newArray.forEach((questionObj: questionModel, index) => {
+          if (questionObj.id == questionId) {
+            newArray[index].question = data;
+          }
+        });
       } else if (typeof data == "object") {
+        //To Edit Responses for checkbox and radio
         if (data.selected != undefined) {
           if (data.type == "radio") {
-            newArray[questionId]!.response.selected = data.selected;
-          } else {
-            if (Array.isArray(newArray[questionId]!.response.selected)) {
-              if (
-                newArray[questionId]!.response.selected.includes(data.selected)
-              ) {
-                let tempArr = newArray[questionId]!.response.selected.filter(
-                  (ans: string) => ans !== data.selected,
-                );
-
-                newArray[questionId]!.response.selected = tempArr;
-              } else {
-                newArray[questionId]!.response.selected = [
-                  ...newArray[questionId]!.response.selected,
-                  data.selected,
-                ];
+            //Changing selection for radio
+            newArray.forEach((questionObj: questionModel, index) => {
+              if (questionObj.id == questionId) {
+                newArray[index].response.selected = data.selected;
               }
-            }
+            });
+          } else {
+            //Changing selection for checkbox
+            newArray.forEach((questionObj: questionModel, index) => {
+              if (questionObj.id == questionId) {
+                newArray[index]?.response.forEach(
+                  (
+                    optionObj: checkBoxResponseModel,
+                    optionObjIndex: number,
+                  ) => {
+                    if (optionObj.id == data.selected) {
+                      newArray[index].response[optionObjIndex].selected =
+                        !newArray[index].response[optionObjIndex].selected;
+                    }
+                  },
+                );
+              }
+            });
           }
         } else if (data.question != undefined) {
           newArray.forEach((questionObj) => {
@@ -185,7 +295,12 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
           });
         }
       } else {
-        newArray[questionId]!.response = data;
+        //To edit text response
+        newArray.forEach((questionObj: questionModel, index) => {
+          if (questionObj.id == questionId) {
+            newArray[index].response = data;
+          }
+        });
       }
 
       return newArray;
@@ -257,14 +372,24 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
               enableSave();
             }}
           >
-            <input
-              type="text"
-              value={data.question}
-              className="bg-gray-200 text-lg font-semibold outline-none"
-              onChange={(e) => {
-                mutateQuestion(data.id, "question", e.target.value);
-              }}
-            />
+            <div className="flex">
+              <div className="w-2/3">
+                <input
+                  type="text"
+                  value={data.question}
+                  className="bg-gray-200 text-lg font-semibold outline-none"
+                  onChange={(e) => {
+                    mutateQuestion(data.id, "question", e.target.value);
+                  }}
+                />
+              </div>
+              <div className="flex w-1/3 justify-end  font-sans text-sm ">
+                <button className="text-red-500 hover:text-red-300">
+                  Delete Question
+                </button>
+              </div>
+            </div>
+
             {typeof data.response == "string" ? (
               <input
                 type="text"
@@ -278,7 +403,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
             ) : data.inputType == "radio" ? (
               <div className="flex flex-col">
                 {data.response.options.map((questionObj, indexOfQuestion) => (
-                  <label>
+                  <label className="flex">
                     <input
                       className="mr-2"
                       size={10}
@@ -294,7 +419,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
                       }}
                     />
                     <input
-                      className="bg-gray-200 outline-none"
+                      className="w-3/4 bg-gray-200 outline-none"
                       type="text"
                       value={questionObj.option}
                       onChange={(e) => {
@@ -304,6 +429,18 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
                         });
                       }}
                     />
+                    <div className="mr-4 flex grow justify-end">
+                      <button
+                        onClick={() => {
+                          deleteRadioOption(data.id, questionObj.id);
+                        }}
+                      >
+                        <FontAwesomeIcon
+                          icon={faTrashCan}
+                          className="h-4 text-red-600 hover:text-red-300"
+                        />
+                      </button>
+                    </div>
                   </label>
                 ))}
                 <p className="mt-3 text-sm opacity-50">
@@ -312,35 +449,49 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
               </div>
             ) : (
               <div className="flex flex-col">
-                {data.response.questions.map((question, indexOfQuestion) => (
-                  <label>
-                    <input
-                      className="mr-2"
-                      size={10}
-                      type="checkbox"
-                      name={question}
-                      id={question}
-                      checked={data.response.selected.includes(question)}
-                      onChange={() => {
-                        mutateQuestion(data.id, "response", {
-                          type: "check",
-                          selected: question,
-                        });
-                      }}
-                    />
-                    <input
-                      className="bg-gray-200 outline-none"
-                      type="text"
-                      value={question}
-                      onChange={(e) => {
-                        mutateQuestion(data.id, "response", {
-                          index: indexOfQuestion,
-                          question: e.target.value,
-                        });
-                      }}
-                    />
-                  </label>
-                ))}
+                {data.response.map(
+                  (
+                    optionObj: checkBoxResponseModel,
+                    optionObjIndex: number,
+                  ) => (
+                    <label className="flex">
+                      <input
+                        className="mr-2"
+                        size={10}
+                        type="checkbox"
+                        name={optionObj.option}
+                        id={optionObj.id}
+                        checked={optionObj.selected}
+                        onChange={() => {
+                          mutateCheckQuestion.select(data.id, optionObj.id);
+                        }}
+                      />
+                      <input
+                        className="w-3/4 bg-gray-200 outline-none"
+                        type="text"
+                        value={optionObj.option}
+                        onChange={(e) => {
+                          // mutateCheckQuestion(data.id, {
+                          //   id: optionObj.id,
+                          //   option: e.target.value,
+                          // });
+                        }}
+                      />
+                      <div className="mr-4 flex grow justify-end">
+                        <button
+                          onClick={() => {
+                            mutateCheckQuestion.delete(data.id, optionObj.id);
+                          }}
+                        >
+                          <FontAwesomeIcon
+                            icon={faTrashCan}
+                            className="h-4 text-red-600 hover:text-red-300"
+                          />
+                        </button>
+                      </div>
+                    </label>
+                  ),
+                )}
                 <p className="mt-3 text-sm opacity-50">
                   Multi Select: Multiple options can be selected
                 </p>
