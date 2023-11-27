@@ -12,9 +12,12 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@mui/material": "^5.14.18",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "^5.1.1",
@@ -24,12 +27,17 @@
     "@trpc/next": "^10.37.1",
     "@trpc/react-query": "^10.37.1",
     "@trpc/server": "^10.37.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "lucide-react": "^0.293.0",
     "next": "^14.0.0",
     "next-auth": "^4.24.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-router-dom": "^6.19.0",
     "superjson": "^1.13.1",
+    "tailwind-merge": "^2.0.0",
+    "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.4"
   },
   "devDependencies": {
