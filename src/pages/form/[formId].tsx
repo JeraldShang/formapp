@@ -8,21 +8,22 @@ export function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-import { useEffect, useRef, useState } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
 import SignIn from "../signIn";
 import { api } from "~/utils/api";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { useSearchParams } from "next/navigation";
+import {
+  faClockRotateLeft,
+  faPlus,
+  faTrashCan,
+} from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
 import DeleteQuestion from "~/components/deleteQuestion";
-import App from "next/app";
 import { FormObject } from "~/types/Form";
-import formHistory from "~/components/formHistory";
 import FormHistory from "~/components/formHistory";
+import { Sheet, SheetTrigger } from "~/components/ui/sheet";
 
 type inputType = "text" | "radio" | "checkbox";
 
@@ -47,10 +48,11 @@ type FormDetailsProps = {
 };
 const Form: React.FC<FormDetailsProps> = ({ formId }) => {
   const { mutate: createFormMutate } = api.form.createForm.useMutation();
-  const { data: existFormCall, isLoading } = api.form.getSpecificForm.useQuery({
-    formId: formId,
-  });
-
+  const { data: existFormCall, isLoading } =
+    api.form.getSpecificFormId.useQuery({
+      formId: formId,
+    });
+  console.log(existFormCall);
   const [questionData, setQuestionData] = useState<questionModel[]>([
     {
       id: createId(),
@@ -78,9 +80,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
   if (sessionData == null) {
     return <SignIn />;
   }
-  function refreshFromData() {
-    api.useContext().form.getSpecificForm.invalidate({ formId: formId });
-  }
+
   function closeDeleteQuestionModal(newFormObj: FormObject | undefined) {
     if (newFormObj != undefined) {
       setQuestionData(newFormObj.formObject);
@@ -390,13 +390,11 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
           />
         ) : null}
 
-        {openFormHistory ? <FormHistory /> : null}
-
         <div className="flex w-full bg-gray-200 py-3">
           <div className="flex w-1/2 items-center justify-start">
             <a
               href="/"
-              className="mx-3 h-10 rounded-lg bg-blue-600 px-2 py-1 font-serif text-white"
+              className="mx-3 flex h-10 items-center rounded-lg bg-blue-600 px-2 py-1 font-serif text-white"
             >
               Home
             </a>
@@ -405,6 +403,14 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
               className="h-14 w-14 rounded-full"
               alt="Profile Picture"
             />
+          </div>
+          <div className="mr-8 flex w-1/2 items-center justify-end ">
+            <Sheet>
+              <SheetTrigger>
+                <FontAwesomeIcon className="h-8 w-8" icon={faClockRotateLeft} />
+              </SheetTrigger>
+              <FormHistory formId={formId} />
+            </Sheet>
           </div>
         </div>
         <div className="my-10 w-1/2 rounded-lg bg-gray-200 px-2">

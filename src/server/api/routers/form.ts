@@ -56,7 +56,7 @@ export const formRouter = createTRPCRouter({
       return results;
     }),
 
-  getSpecificForm: publicProcedure
+  getSpecificFormId: protectedProcedure
     .input(z.object({ formId: z.string() }))
     .query(async ({ ctx, input }) => {
       const results = await ctx.db.form.findFirst({
@@ -66,7 +66,26 @@ export const formRouter = createTRPCRouter({
 
       return results;
     }),
+  getPastFormVersions: protectedProcedure
+    .input(z.object({ formId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const results = await ctx.db.form.findMany({
+        where: { formId: { equals: input.formId } },
+        orderBy: { createdAt: "desc" },
+        skip: 1,
+      });
 
+      return results;
+    }),
+  getSpecificVersionId: protectedProcedure
+    .input(z.object({ formId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const results = await ctx.db.form.findUnique({
+        where: { id: input.formId },
+      });
+
+      return results;
+    }),
   // getLatest: protectedProcedure.query(({ ctx }) => {
   //   return ctx.db.post.findFirst({
   //     orderBy: { createdAt: "desc" },
