@@ -21,6 +21,8 @@ import { createId } from "@paralleldrive/cuid2";
 import DeleteQuestion from "~/components/deleteQuestion";
 import App from "next/app";
 import { FormObject } from "~/types/Form";
+import formHistory from "~/components/formHistory";
+import FormHistory from "~/components/formHistory";
 
 type inputType = "text" | "radio" | "checkbox";
 
@@ -63,11 +65,12 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
   const [showDeleteQuestionModal, setShowDeleteQuestionModal] = useState(false);
   const [selectedDeleteQuestion, setSelectedDeleteQuestion] =
     useState<string>("");
+  const [openFormHistory, setOpenFormHistory] = useState(true);
 
   useEffect(() => {
     if (!isLoading && existFormCall != null) {
       setName(existFormCall?.name);
-      setQuestionData(existFormCall?.formObject);
+      setQuestionData(existFormCall?.formObject as questionModel[]);
     }
   }, [isLoading]);
 
@@ -253,15 +256,15 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
 
         let newArray = [...prevArr];
         newArray.forEach((questionObj: questionModel, index) => {
-          if (questionObj.id == questionId) {
-            newArray[index]?.response.forEach(
-              (optionObj: checkBoxResponseModel, optionObjIndex: number) => {
-                if (optionObj.id == selected) {
-                  newArray[index].response[optionObjIndex].selected =
-                    !newArray[index].response[optionObjIndex].selected;
-                }
-              },
-            );
+          if (
+            questionObj.id == questionId &&
+            isCheckBoxResponse(questionObj.response)
+          ) {
+            questionObj.response.forEach((optionObj: checkBoxResponseModel) => {
+              if (optionObj.id == selected) {
+                optionObj.selected = !optionObj.selected;
+              }
+            });
           }
         });
         return newArray;
@@ -274,9 +277,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
         newArray.forEach((questionObj, index) => {
           if (
             questionObj.id == questionId &&
-            isCheckBoxResponse(questionObj.response) &&
-            newArray[index] != undefined &&
-            isCheckBoxResponse(newArray[index]?.response)
+            isCheckBoxResponse(questionObj.response)
           ) {
             let tempOptionsArr: {
               id: string;
@@ -289,7 +290,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
               }
             });
 
-            newArray[index].response = tempOptionsArr;
+            questionObj.response = tempOptionsArr;
           }
         });
         return newArray;
@@ -331,8 +332,11 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
       setQuestionData((prevArr) => {
         let newArray = [...prevArr];
         newArray.forEach((questionObj) => {
-          if (questionObj.id == questionId) {
-            questionObj.response.forEach((optionObj: object) => {
+          if (
+            questionObj.id == questionId &&
+            isCheckBoxResponse(questionObj.response)
+          ) {
+            questionObj.response.forEach((optionObj) => {
               if (optionObj.id == optionId) {
                 optionObj.option = newOption;
               }
@@ -385,6 +389,8 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
             onClose={closeDeleteQuestionModal}
           />
         ) : null}
+
+        {openFormHistory ? <FormHistory /> : null}
 
         <div className="flex w-full bg-gray-200 py-3">
           <div className="flex w-1/2 items-center justify-start">
@@ -481,17 +487,20 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
               <div className="flex flex-col">
                 {data.response.options.map((optionObj) => (
                   <label className="flex">
-                    <input
-                      className="mr-2"
-                      size={10}
-                      type="radio"
-                      name={optionObj.option}
-                      id={optionObj.id}
-                      checked={data.response.selected == optionObj.id}
-                      onChange={() => {
-                        mutateRadioQuestion.select(data.id, optionObj.id);
-                      }}
-                    />
+                    {isRadioResponse(data.response) ? (
+                      <input
+                        className="mr-2"
+                        size={10}
+                        type="radio"
+                        name={optionObj.option}
+                        id={optionObj.id}
+                        checked={data.response.selected == optionObj.id}
+                        onChange={() => {
+                          mutateRadioQuestion.select(data.id, optionObj.id);
+                        }}
+                      />
+                    ) : null}
+
                     <input
                       className="w-3/4 bg-gray-200 outline-none"
                       type="text"

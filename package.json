@@ -60,5 +60,9 @@
   "ct3aMetadata": {
     "initVersion": "7.23.2"
   },
-  "packageManager": "npm@10.2.3"
+  "packageManager": "npm@10.2.3",
+  "description": "This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.",
+  "main": "tailwind.config.js",
+  "author": "",
+  "license": "ISC"
 }

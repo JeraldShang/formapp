@@ -1,16 +1,7 @@
-import { useState } from "react";
-
 import { FormDeleteObj } from "~/types/FormActions";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import {
-  checkBoxResponseModel,
-  questionModel,
-  radioResponseModel,
-} from "~/types/Form";
-import { api } from "~/utils/api";
-import { signOut, useSession } from "next-auth/react";
+import { questionModel } from "~/types/Form";
 
 const style = {
   position: "absolute" as "absolute",
