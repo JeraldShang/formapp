@@ -23,6 +23,10 @@ type radioResponseModel = {
 type FormDetailsProps = {
   formId: string;
 };
+const dateConfiguration: Intl.DateTimeFormatOptions = {
+  day: "2-digit",
+  month: "long",
+};
 
 const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
   const { data: sessionData } = useSession();
@@ -39,7 +43,7 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
       "selected" in response
     );
   }
-  console.log(formData);
+
   return (
     <>
       <main className=" flex min-h-screen flex-col items-center font-sans">
@@ -67,8 +71,21 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
             </Sheet>
           </div>
         </div>
+        {isLoading || formData == null || formData.formObject == null ? null : (
+          <div className="flex w-full justify-center bg-red-500 text-white">
+            Your viewing version saved on{" "}
+            {new Date(formData!.createdAt).toLocaleDateString(
+              "en-US",
+              dateConfiguration,
+            )}
+            , {new Date(formData!.createdAt).toTimeString().slice(0, 8)}
+          </div>
+        )}
 
-        {isLoading || formData == null || formData.formObject == null ? (
+        {isLoading ||
+        formData == null ||
+        formData.formObject == null ||
+        !Array.isArray(formData.formObject) ? (
           <p>Loading</p>
         ) : (
           <div className="flex w-full flex-col items-center">
@@ -82,6 +99,7 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
               </div>
               <div className="my-2 flex">
                 <p className="mx-3">{sessionData.user.email}</p>
+                {/* {type of formData.formObject} */}
               </div>
             </div>
             {formData?.formObject.map((data: any) => (
