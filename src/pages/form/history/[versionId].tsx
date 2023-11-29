@@ -6,8 +6,9 @@ import type { GetServerSidePropsContext } from "next/types";
 import FormHistory from "~/components/formHistory";
 import { SheetTrigger, Sheet } from "~/components/ui/sheet";
 import SignIn from "~/pages/signIn";
-import type { CheckBoxResponseModel } from "~/types/Form";
+import type { CheckBoxResponseModel, RadioResponseModel } from "~/types/Form";
 import { api } from "~/utils/api";
+import Image from "next/image";
 
 export function getServerSideProps(context: GetServerSidePropsContext) {
   return {
@@ -16,10 +17,6 @@ export function getServerSideProps(context: GetServerSidePropsContext) {
     },
   };
 }
-type radioResponseModel = {
-  options: { id: string; option: string }[];
-  selected: string;
-};
 type FormDetailsProps = {
   formId: string;
 };
@@ -36,7 +33,9 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
   if (sessionData == null) {
     return <SignIn />;
   }
-  function isRadioResponse(response: any): response is radioResponseModel {
+  function isRadioResponse(
+    response: RadioResponseModel | CheckBoxResponseModel[] | string,
+  ): response is RadioResponseModel {
     return (
       typeof response === "object" &&
       response !== null &&
@@ -49,28 +48,35 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
       <main className=" flex min-h-screen flex-col items-center font-sans">
         <div className="flex w-full bg-gray-200 py-3">
           <div className="flex w-1/2 items-center justify-start">
+            <Image
+              src={sessionData.user.image!}
+              width={60}
+              height={60}
+              className="mx-3 rounded-full"
+              alt="Profile Picture"
+            />
             <Link
               className="mx-3 flex h-10 items-center rounded-lg bg-blue-600 px-2 py-1 font-serif text-white"
               href={"/"}
             >
               Home
             </Link>
-            <img
-              src={sessionData.user.image!}
-              className="h-14 w-14 rounded-full"
-              alt="Profile Picture"
-            />
           </div>
           <div className="mr-8 flex w-1/2 items-center justify-end ">
-            <Sheet>
-              <SheetTrigger>
-                <FontAwesomeIcon className="h-8 w-8" icon={faClockRotateLeft} />
-              </SheetTrigger>
-              <FormHistory formId={formData?.formId!} />
-            </Sheet>
+            {!formData ? null : (
+              <Sheet>
+                <SheetTrigger>
+                  <FontAwesomeIcon
+                    className="h-8 w-8"
+                    icon={faClockRotateLeft}
+                  />
+                </SheetTrigger>
+                <FormHistory formId={formData.formId} />
+              </Sheet>
+            )}
           </div>
         </div>
-        {isLoading || formData == null || formData.formObject == null ? null : (
+        {isLoading ? null : (
           <div className="flex w-full justify-center bg-red-500 text-white">
             Your viewing version saved on{" "}
             {new Date(formData!.createdAt).toLocaleDateString(
