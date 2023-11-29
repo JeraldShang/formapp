@@ -384,7 +384,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
       <main className=" flex min-h-screen flex-col items-center font-sans">
         {showDeleteQuestionModal ? (
           <DeleteQuestion
-            formObj={existFormCall!}
+            formObj={existFormCall! as unknown as FormObject}
             questionId={selectedDeleteQuestion}
             open={showDeleteQuestionModal}
             onClose={closeDeleteQuestionModal}

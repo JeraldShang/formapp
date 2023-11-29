@@ -22,5 +22,5 @@ export interface FormObject {
   formId: string;
   createdById: string;
   createdAt: any;
-  formObject: any;
+  formObject: QuestionModel[];
 }
