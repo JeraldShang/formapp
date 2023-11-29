@@ -31,6 +31,7 @@ import type {
 import FormHistory from "~/components/formHistory";
 import { Sheet, SheetTrigger } from "~/components/ui/sheet";
 import Link from "next/link";
+import Image from "next/image";
 
 type FormDetailsProps = {
   formId: string;
@@ -62,7 +63,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
       setName(existFormCall?.name);
       setQuestionData(existFormCall?.formObject as unknown as QuestionModel[]);
     }
-  }, [isLoading]);
+  }, [isLoading, existFormCall]);
 
   const { data: sessionData } = useSession();
   if (sessionData == null) {
@@ -97,7 +98,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
 
   function addQuestion(type: InputType) {
     setShowAddOptions(false);
-    let questionNumber = questionData.length + 1;
+    const questionNumber = questionData.length + 1;
     if (type == "text") {
       setQuestionData((prevArr) => [
         ...prevArr,
@@ -109,7 +110,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
         },
       ]);
     } else if (type == "radio") {
-      let selectedId = createId();
+      const selectedId = createId();
       setQuestionData((prevArr) => [
         ...prevArr,
         {
@@ -153,12 +154,12 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
       setQuestionData((prevArr) => {
         const newArray = [...prevArr];
 
-        newArray.forEach((questionObj, index) => {
+        newArray.forEach((questionObj) => {
           if (
             questionObj.id == questionId &&
             isRadioResponse(questionObj.response)
           ) {
-            let tempOptionsArr: { id: string; option: string }[] = [];
+            const tempOptionsArr: { id: string; option: string }[] = [];
             questionObj.response.options.forEach(
               (optionsObj: { id: string; option: string }) => {
                 if (optionsObj.id != optionId) {
@@ -199,7 +200,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
     },
     select: (questionId: string, selectedId: string) => {
       setQuestionData((prevArr) => {
-        let newArray = [...prevArr];
+        const newArray = [...prevArr];
         newArray.forEach((questionObj) => {
           if (
             questionObj.id == questionId &&
@@ -214,7 +215,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
     },
     option: (questionId: string, optionId: string, newOption: string) => {
       setQuestionData((prevArr) => {
-        let newArray = [...prevArr];
+        const newArray = [...prevArr];
         newArray.forEach((questionObj) => {
           if (
             questionObj.id == questionId &&
@@ -262,12 +263,12 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
       setQuestionData((prevArr) => {
         const newArray = [...prevArr];
 
-        newArray.forEach((questionObj, index) => {
+        newArray.forEach((questionObj) => {
           if (
             questionObj.id == questionId &&
             isCheckBoxResponse(questionObj.response)
           ) {
-            let tempOptionsArr: {
+            const tempOptionsArr: {
               id: string;
               option: string;
               selected: boolean;
@@ -300,12 +301,6 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
             newArray[index] != undefined &&
             isCheckBoxResponse(newArray[index]?.response)
           ) {
-            let tempOptionsArr: {
-              id: string;
-              option: string;
-              selected: boolean;
-            }[] = [];
-
             questionObj.response.push({
               id: createId(),
               option: "Another Question",
@@ -318,7 +313,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
     },
     option: (questionId: string, optionId: string, newOption: string) => {
       setQuestionData((prevArr) => {
-        let newArray = [...prevArr];
+        const newArray = [...prevArr];
         newArray.forEach((questionObj) => {
           if (
             questionObj.id == questionId &&
@@ -339,7 +334,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
 
   function mutateQuestionTitle(newQuestion: string, questionId: string) {
     setQuestionData((prevArr) => {
-      let newArray = [...prevArr];
+      const newArray = [...prevArr];
       newArray.forEach((questionObj) => {
         if (questionObj.id == questionId) {
           questionObj.question = newQuestion;
@@ -351,7 +346,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
 
   function mutateTextQuestionResponse(questionId: string, newResposne: string) {
     setQuestionData((prevArr) => {
-      let newArray = [...prevArr];
+      const newArray = [...prevArr];
       newArray.forEach((questionObj) => {
         if (questionObj.id == questionId) {
           questionObj.response = newResposne;
@@ -380,17 +375,19 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
 
         <div className="flex w-full bg-gray-200 py-3">
           <div className="flex w-1/2 items-center justify-start">
+            <Image
+              src={sessionData.user.image!}
+              width={60}
+              height={60}
+              className="mx-3 rounded-full"
+              alt="Profile Picture"
+            />
             <Link
               className="mx-3 flex h-10 items-center rounded-lg bg-blue-600 px-2 py-1 font-serif text-white"
               href={"/"}
             >
               Home
             </Link>
-            <img
-              src={sessionData.user.image!}
-              className="h-14 w-14 rounded-full"
-              alt="Profile Picture"
-            />
           </div>
           <div className="mr-8 flex w-1/2 items-center justify-end ">
             <Sheet>
