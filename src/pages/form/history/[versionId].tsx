@@ -6,9 +6,14 @@ import type { GetServerSidePropsContext } from "next/types";
 import FormHistory from "~/components/formHistory";
 import { SheetTrigger, Sheet } from "~/components/ui/sheet";
 import SignIn from "~/pages/signIn";
-import type { CheckBoxResponseModel, RadioResponseModel } from "~/types/Form";
+import type {
+  CheckBoxResponseModel,
+  QuestionModel,
+  RadioResponseModel,
+} from "~/types/Form";
 import { api } from "~/utils/api";
 import Image from "next/image";
+import { JsonValue } from "@prisma/client/runtime/library";
 
 export function getServerSideProps(context: GetServerSidePropsContext) {
   return {
@@ -41,6 +46,12 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
       response !== null &&
       "selected" in response
     );
+  }
+
+  function isQuestionModelArray(
+    response: QuestionModel[] | JsonValue | undefined,
+  ): response is QuestionModel[] {
+    return Array.isArray(response);
   }
 
   return (
@@ -87,10 +98,7 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
           </div>
         )}
 
-        {isLoading ||
-        formData == null ||
-        formData.formObject == null ||
-        !Array.isArray(formData.formObject) ? (
+        {isLoading || !Array.isArray(formData?.formObject) ? (
           <p>Loading</p>
         ) : (
           <div className="flex w-full flex-col items-center">

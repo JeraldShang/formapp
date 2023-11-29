@@ -42,7 +42,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
     api.form.getSpecificFormId.useQuery({
       formId: formId,
     });
-  console.log(existFormCall);
+
   const [questionData, setQuestionData] = useState<QuestionModel[]>([
     {
       id: createId(),
