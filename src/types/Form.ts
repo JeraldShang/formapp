@@ -1,19 +1,19 @@
-export type inputType = "text" | "radio" | "checkbox";
+export type InputType = "text" | "radio" | "checkbox";
 
-export interface radioResponseModel {
+export interface RadioResponseModel {
   options: { id: string; option: string }[];
   selected: string;
 }
-export interface checkBoxResponseModel {
+export interface CheckBoxResponseModel {
   id: string;
   option: string;
   selected: boolean;
 }
-export interface questionModel {
+export interface QuestionModel {
   id: string;
   question: string;
-  inputType: inputType;
-  response: string | radioResponseModel | checkBoxResponseModel[];
+  inputType: InputType;
+  response: string | RadioResponseModel | CheckBoxResponseModel[];
 }
 
 export interface FormObject {

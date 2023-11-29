@@ -1,7 +1,7 @@
-import { FormDeleteObj } from "~/types/FormActions";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
-import { questionModel } from "~/types/Form";
+import type { FormDeleteObj } from "~/types/FormActions";
+import type { QuestionModel } from "~/types/Form";
 
 const style = {
   position: "absolute",
@@ -24,8 +24,8 @@ const DeleteQuestion: React.FC<FormDeleteObj> = ({
   function deleteQuestionFunc() {
     const newFormObj = formObj;
 
-    const tempQuestions: questionModel[] = [];
-    newFormObj.formObject.forEach((questionObj: questionModel) => {
+    const tempQuestions: QuestionModel[] = [];
+    newFormObj.formObject.forEach((questionObj: QuestionModel) => {
       if (questionObj.id != questionId) {
         tempQuestions.push(questionObj);
       }
