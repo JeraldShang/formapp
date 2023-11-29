@@ -80,7 +80,9 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
   }
 
   // Type guards
-  function isRadioResponse(response: any): response is RadioResponseModel {
+  function isRadioResponse(
+    response: RadioResponseModel | CheckBoxResponseModel[] | string,
+  ): response is RadioResponseModel {
     return (
       typeof response === "object" &&
       response !== null &&
@@ -89,7 +91,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
   }
 
   function isCheckBoxResponse(
-    response: any,
+    response: RadioResponseModel | CheckBoxResponseModel[] | string,
   ): response is CheckBoxResponseModel[] {
     return (
       Array.isArray(response) && response.every((item) => "selected" in item)
@@ -187,7 +189,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
             questionObj.id == questionId &&
             isRadioResponse(questionObj.response) &&
             newArray[index] != undefined &&
-            isRadioResponse(newArray[index]?.response)
+            isRadioResponse(newArray[index]?.response!)
           ) {
             questionObj.response.options.push({
               id: createId(),
@@ -243,7 +245,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
         if (renderCount > 0) return [...prevArr];
         renderCount++;
 
-        let newArray = [...prevArr];
+        const newArray = [...prevArr];
         newArray.forEach((questionObj: QuestionModel) => {
           if (
             questionObj.id == questionId &&
@@ -299,7 +301,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
             questionObj.id == questionId &&
             isCheckBoxResponse(questionObj.response) &&
             newArray[index] != undefined &&
-            isCheckBoxResponse(newArray[index]?.response)
+            isCheckBoxResponse(newArray[index]?.response!)
           ) {
             questionObj.response.push({
               id: createId(),
