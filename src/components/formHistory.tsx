@@ -1,10 +1,6 @@
-import { Label } from "~/components/ui/label";
-import { Input } from "~/components/ui/input";
 import { SheetContent, SheetHeader, SheetTitle } from "~/components/ui/sheet";
-import { GetServerSideProps } from "next";
 import { api } from "~/utils/api";
-import { Loader } from "lucide-react";
-import { faChevronRight, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const dateConfiguration: Intl.DateTimeFormatOptions = {
