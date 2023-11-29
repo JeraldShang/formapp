@@ -21,28 +21,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
 import DeleteQuestion from "~/components/deleteQuestion";
-import { FormObject } from "~/types/Form";
+import type {
+  CheckBoxResponseModel,
+  FormObject,
+  InputType,
+  QuestionModel,
+  RadioResponseModel,
+} from "~/types/Form";
 import FormHistory from "~/components/formHistory";
 import { Sheet, SheetTrigger } from "~/components/ui/sheet";
 import Link from "next/link";
-
-type inputType = "text" | "radio" | "checkbox";
-
-type radioResponseModel = {
-  options: { id: string; option: string }[];
-  selected: string;
-};
-type checkBoxResponseModel = {
-  id: string;
-  option: string;
-  selected: boolean;
-};
-type questionModel = {
-  id: string;
-  question: string;
-  inputType: inputType;
-  response: string | radioResponseModel | checkBoxResponseModel[];
-};
 
 type FormDetailsProps = {
   formId: string;
@@ -54,7 +42,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
       formId: formId,
     });
   console.log(existFormCall);
-  const [questionData, setQuestionData] = useState<questionModel[]>([
+  const [questionData, setQuestionData] = useState<QuestionModel[]>([
     {
       id: createId(),
       question: "Question 1",
@@ -68,12 +56,11 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
   const [showDeleteQuestionModal, setShowDeleteQuestionModal] = useState(false);
   const [selectedDeleteQuestion, setSelectedDeleteQuestion] =
     useState<string>("");
-  const [openFormHistory, setOpenFormHistory] = useState(true);
 
   useEffect(() => {
     if (!isLoading && existFormCall != null) {
       setName(existFormCall?.name);
-      setQuestionData(existFormCall?.formObject as questionModel[]);
+      setQuestionData(existFormCall?.formObject as unknown as QuestionModel[]);
     }
   }, [isLoading]);
 
@@ -92,7 +79,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
   }
 
   // Type guards
-  function isRadioResponse(response: any): response is radioResponseModel {
+  function isRadioResponse(response: any): response is RadioResponseModel {
     return (
       typeof response === "object" &&
       response !== null &&
@@ -102,13 +89,13 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
 
   function isCheckBoxResponse(
     response: any,
-  ): response is checkBoxResponseModel[] {
+  ): response is CheckBoxResponseModel[] {
     return (
       Array.isArray(response) && response.every((item) => "selected" in item)
     );
   }
 
-  function addQuestion(type: inputType) {
+  function addQuestion(type: InputType) {
     setShowAddOptions(false);
     let questionNumber = questionData.length + 1;
     if (type == "text") {
@@ -256,12 +243,12 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
         renderCount++;
 
         let newArray = [...prevArr];
-        newArray.forEach((questionObj: questionModel, index) => {
+        newArray.forEach((questionObj: QuestionModel) => {
           if (
             questionObj.id == questionId &&
             isCheckBoxResponse(questionObj.response)
           ) {
-            questionObj.response.forEach((optionObj: checkBoxResponseModel) => {
+            questionObj.response.forEach((optionObj: CheckBoxResponseModel) => {
               if (optionObj.id == selected) {
                 optionObj.selected = !optionObj.selected;
               }
@@ -285,7 +272,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
               option: string;
               selected: boolean;
             }[] = [];
-            questionObj.response.forEach((optionObj: checkBoxResponseModel) => {
+            questionObj.response.forEach((optionObj: CheckBoxResponseModel) => {
               if (optionObj.id != optionId) {
                 tempOptionsArr.push(optionObj);
               }
@@ -557,51 +544,46 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
               </div>
             ) : (
               <div className="flex flex-col">
-                {data.response.map(
-                  (
-                    optionObj: checkBoxResponseModel,
-                    optionObjIndex: number,
-                  ) => (
-                    <label className="flex">
-                      <input
-                        className="mr-2"
-                        size={10}
-                        type="checkbox"
-                        name={optionObj.option}
-                        id={optionObj.id}
-                        checked={optionObj.selected}
-                        onChange={() => {
-                          mutateCheckQuestion.select(data.id, optionObj.id);
+                {data.response.map((optionObj: CheckBoxResponseModel) => (
+                  <label className="flex">
+                    <input
+                      className="mr-2"
+                      size={10}
+                      type="checkbox"
+                      name={optionObj.option}
+                      id={optionObj.id}
+                      checked={optionObj.selected}
+                      onChange={() => {
+                        mutateCheckQuestion.select(data.id, optionObj.id);
+                      }}
+                    />
+                    <input
+                      className="w-3/4 bg-gray-200 outline-none"
+                      type="text"
+                      value={optionObj.option}
+                      onChange={(e) => {
+                        mutateCheckQuestion.option(
+                          data.id,
+                          optionObj.id,
+                          e.target.value,
+                        );
+                      }}
+                    />
+                    <div className="mr-4 flex grow justify-end">
+                      <button
+                        onClick={() => {
+                          mutateCheckQuestion.delete(data.id, optionObj.id);
+                          enableSave();
                         }}
-                      />
-                      <input
-                        className="w-3/4 bg-gray-200 outline-none"
-                        type="text"
-                        value={optionObj.option}
-                        onChange={(e) => {
-                          mutateCheckQuestion.option(
-                            data.id,
-                            optionObj.id,
-                            e.target.value,
-                          );
-                        }}
-                      />
-                      <div className="mr-4 flex grow justify-end">
-                        <button
-                          onClick={() => {
-                            mutateCheckQuestion.delete(data.id, optionObj.id);
-                            enableSave();
-                          }}
-                        >
-                          <FontAwesomeIcon
-                            icon={faTrashCan}
-                            className="h-4 text-red-600 hover:text-red-300"
-                          />
-                        </button>
-                      </div>
-                    </label>
-                  ),
-                )}
+                      >
+                        <FontAwesomeIcon
+                          icon={faTrashCan}
+                          className="h-4 text-red-600 hover:text-red-300"
+                        />
+                      </button>
+                    </div>
+                  </label>
+                ))}
                 <div className="mt-3 flex ">
                   <p className="text-sm opacity-50">
                     Multi Select: Multiple options can be selected
