@@ -187,9 +187,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
         newArray.forEach((questionObj, index) => {
           if (
             questionObj.id == questionId &&
-            isRadioResponse(questionObj.response) &&
-            newArray[index] != undefined &&
-            isRadioResponse(newArray[index]?.response!)
+            isRadioResponse(questionObj.response)
           ) {
             questionObj.response.options.push({
               id: createId(),
@@ -299,9 +297,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
         newArray.forEach((questionObj, index) => {
           if (
             questionObj.id == questionId &&
-            isCheckBoxResponse(questionObj.response) &&
-            newArray[index] != undefined &&
-            isCheckBoxResponse(newArray[index]?.response!)
+            isCheckBoxResponse(questionObj.response)
           ) {
             questionObj.response.push({
               id: createId(),
@@ -422,7 +418,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
                   createFormMutate({
                     formId: formId!,
                     name: name!,
-                    createdById: sessionData?.user.id!,
+                    createdById: sessionData?.user.id,
                     formObject: questionData,
                   });
                 }}
