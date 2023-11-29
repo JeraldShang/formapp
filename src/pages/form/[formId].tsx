@@ -24,6 +24,7 @@ import DeleteQuestion from "~/components/deleteQuestion";
 import { FormObject } from "~/types/Form";
 import FormHistory from "~/components/formHistory";
 import { Sheet, SheetTrigger } from "~/components/ui/sheet";
+import Link from "next/link";
 
 type inputType = "text" | "radio" | "checkbox";
 
@@ -392,12 +393,12 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
 
         <div className="flex w-full bg-gray-200 py-3">
           <div className="flex w-1/2 items-center justify-start">
-            <a
-              href="/"
+            <Link
               className="mx-3 flex h-10 items-center rounded-lg bg-blue-600 px-2 py-1 font-serif text-white"
+              href={"/"}
             >
               Home
-            </a>
+            </Link>
             <img
               src={sessionData.user.image!}
               className="h-14 w-14 rounded-full"

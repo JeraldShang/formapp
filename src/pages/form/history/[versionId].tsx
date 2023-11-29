@@ -1,12 +1,12 @@
 import { faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSession } from "next-auth/react";
-import { Head } from "next/document";
+import Link from "next/link";
 import type { GetServerSidePropsContext } from "next/types";
 import FormHistory from "~/components/formHistory";
 import { SheetTrigger, Sheet } from "~/components/ui/sheet";
 import SignIn from "~/pages/signIn";
-import { checkBoxResponseModel } from "~/types/Form";
+import type { CheckBoxResponseModel } from "~/types/Form";
 import { api } from "~/utils/api";
 
 export function getServerSideProps(context: GetServerSidePropsContext) {
@@ -49,13 +49,12 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
       <main className=" flex min-h-screen flex-col items-center font-sans">
         <div className="flex w-full bg-gray-200 py-3">
           <div className="flex w-1/2 items-center justify-start">
-            <a
-              href="/"
+            <Link
               className="mx-3 flex h-10 items-center rounded-lg bg-blue-600 px-2 py-1 font-serif text-white"
+              href={"/"}
             >
               Home
-            </a>
-
+            </Link>
             <img
               src={sessionData.user.image!}
               className="h-14 w-14 rounded-full"
@@ -152,7 +151,7 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
                   </div>
                 ) : (
                   <div className="flex flex-col">
-                    {data.response.map((optionObj: checkBoxResponseModel) => (
+                    {data.response.map((optionObj: CheckBoxResponseModel) => (
                       <label className="flex">
                         <input
                           className="mr-2"

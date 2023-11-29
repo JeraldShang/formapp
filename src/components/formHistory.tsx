@@ -12,7 +12,7 @@ const FormHistory = ({ formId }: { formId: string }) => {
   const { data: pastForms } = api.form.getPastFormVersions.useQuery({
     formId: formId,
   });
-  console.log(process.env.NEXTAUTH_URL);
+
   return (
     <SheetContent>
       <SheetHeader>
@@ -37,6 +37,7 @@ const FormHistory = ({ formId }: { formId: string }) => {
               <a
                 href={`http://localhost:3000/form/history/${formObj.id}`}
                 className="text-md flex h-12 items-center rounded-lg bg-blue-400 px-4 text-white duration-300 hover:scale-105 hover:cursor-pointer"
+                key={formObj.id}
               >
                 <div>
                   {new Date(formObj.createdAt).toLocaleDateString(
