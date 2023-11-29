@@ -4,7 +4,7 @@ import Modal from "@mui/material/Modal";
 import { questionModel } from "~/types/Form";
 
 const style = {
-  position: "absolute" as "absolute",
+  position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
@@ -22,9 +22,9 @@ const DeleteQuestion: React.FC<FormDeleteObj> = ({
   open,
 }) => {
   function deleteQuestionFunc() {
-    let newFormObj = formObj;
+    const newFormObj = formObj;
 
-    let tempQuestions: any = [];
+    const tempQuestions: questionModel[] = [];
     newFormObj.formObject.forEach((questionObj: questionModel) => {
       if (questionObj.id != questionId) {
         tempQuestions.push(questionObj);
