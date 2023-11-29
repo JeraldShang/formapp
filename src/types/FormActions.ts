@@ -1,8 +1,8 @@
-import { FormObject } from "./Form";
+import type { FormObject } from "./Form";
 
-export interface FormDeleteObj {
+export type FormDeleteObj = {
   formObj: FormObject;
-  questionId: String;
+  questionId: string;
   onClose: (newFormObject: FormObject | undefined) => void;
   open: boolean;
-}
+};

@@ -5,14 +5,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-
-type inputType = "text" | "radio" | "checkbox";
-type questionModel = {
-  id: number;
-  question: string;
-  inputType: inputType;
-  response: string | object;
-};
+import type { QuestionModel } from "~/types/Form";
 
 export const formRouter = createTRPCRouter({
   hello: publicProcedure
@@ -37,11 +30,11 @@ export const formRouter = createTRPCRouter({
         data: {
           formId: input.formId,
           name: input.name,
-          formObject: input.formObject,
+          formObject: input.formObject as QuestionModel[],
           createdById: input.createdById,
         },
       });
-      console.log(results);
+
       return results;
     }),
 
@@ -86,14 +79,4 @@ export const formRouter = createTRPCRouter({
 
       return results;
     }),
-  // getLatest: protectedProcedure.query(({ ctx }) => {
-  //   return ctx.db.post.findFirst({
-  //     orderBy: { createdAt: "desc" },
-  //     where: { createdBy: { id: ctx.session.user.id } },
-  //   });
-  // }),
-
-  // getSecretMessage: protectedProcedure.query(() => {
-  //   return "you can now see this secret message!";
-  // }),
 });

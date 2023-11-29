@@ -1,11 +1,7 @@
-import { useEffect } from "react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Head from "next/head";
-import { sign } from "crypto";
 
 export default function SignIn() {
-  const { data: sessionData } = useSession();
-
   return (
     <>
       <Head>
@@ -17,7 +13,9 @@ export default function SignIn() {
         <div className="flex w-full items-center justify-start">
           <button
             onClick={() => {
-              signIn();
+              signIn().catch((error) => {
+                console.log(error);
+              });
             }}
             className="m-3 rounded-lg bg-blue-600 px-2 py-1 font-sans text-white"
           >

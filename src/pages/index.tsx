@@ -1,27 +1,27 @@
-import { useEffect } from "react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Head from "next/head";
-import Link from "next/link";
 import SignIn from "./signIn";
-
+import Image from "next/image";
 import { api } from "~/utils/api";
 import { createId } from "@paralleldrive/cuid2";
-import { create } from "domain";
+import type { JsonValue } from "@prisma/client/runtime/library";
 
 type formIdNameModel = {
   formId: string;
   name: string;
-  formObject: any;
+  formObject: JsonValue;
 };
 
 export default function Home() {
   const { data: sessionData } = useSession();
-
+  if (sessionData == null) {
+    return <SignIn />;
+  }
   const hello = api.form.getUsersForms.useQuery({
-    userId: sessionData?.user.id!,
+    userId: sessionData.user.id,
   });
-  var arrayOfFormId: string[] = [];
-  var arrayOfFormIdName: formIdNameModel[] = [];
+  const arrayOfFormId: string[] = [];
+  const arrayOfFormIdName: formIdNameModel[] = [];
   function countUnique() {
     hello.data?.forEach((form) => {
       if (!arrayOfFormId.includes(form.formId)) {
@@ -37,10 +37,6 @@ export default function Home() {
   }
   countUnique();
 
-  if (sessionData == null) {
-    return <SignIn />;
-  }
-  const profileImage = sessionData.user.image!;
   return (
     <>
       <Head>
@@ -53,15 +49,19 @@ export default function Home() {
           <div className="flex w-1/2 items-center justify-start">
             <button
               onClick={() => {
-                signOut();
+                signOut().catch((error) => {
+                  console.log(error);
+                });
               }}
               className="mx-3 h-10 rounded-lg bg-red-500 px-2 py-1 font-serif text-white"
             >
               Sign Out
             </button>
-            <img
-              src={profileImage}
-              className="h-14 w-14 rounded-full"
+            <Image
+              src={sessionData.user.image!}
+              width={60}
+              height={60}
+              className="mx-3 rounded-full"
               alt="Profile Picture"
             />
           </div>
@@ -78,6 +78,7 @@ export default function Home() {
         <div className="mt-5 flex gap-10 px-24">
           {arrayOfFormIdName.map((form) => (
             <a
+              key={form.formId}
               className=" flex h-64 w-44 flex-col items-center   rounded-lg bg-gray-300 text-center text-2xl text-white shadow-md  duration-200 hover:scale-105"
               href={`/form/${form.formId}`}
             >

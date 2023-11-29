@@ -13,7 +13,7 @@ import type {
 } from "~/types/Form";
 import { api } from "~/utils/api";
 import Image from "next/image";
-import { JsonValue } from "@prisma/client/runtime/library";
+import type { JsonValue } from "@prisma/client/runtime/library";
 
 export function getServerSideProps(context: GetServerSidePropsContext) {
   return {
@@ -98,7 +98,9 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
           </div>
         )}
 
-        {isLoading || !Array.isArray(formData?.formObject) ? (
+        {isLoading ||
+        !Array.isArray(formData?.formObject) ||
+        !Array.isArray(formData?.formObject) ? (
           <p>Loading</p>
         ) : (
           <div className="flex w-full flex-col items-center">
@@ -115,83 +117,92 @@ const PastFormSnapShot: React.FC<FormDetailsProps> = ({ formId }) => {
                 {/* {type of formData.formObject} */}
               </div>
             </div>
-            {formData?.formObject.map((data: any) => (
-              <div className="mt-4 flex w-1/2 flex-col gap-3 rounded-lg bg-gray-200 px-2 py-4">
-                <div className="flex">
-                  <div className="w-2/3">
+            {formData?.formObject
+              ?.filter((data): data is QuestionModel =>
+                isQuestionModelArray(data),
+              )
+              .map((data: QuestionModel) => (
+                <div
+                  key={data.id}
+                  className="mt-4 flex w-1/2 flex-col gap-3 rounded-lg bg-gray-200 px-2 py-4"
+                >
+                  <div className="flex">
+                    <div className="w-2/3">
+                      <input
+                        type="text"
+                        value={data.question}
+                        className="bg-gray-200 text-lg font-semibold outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {typeof data.response == "string" ? (
                     <input
                       type="text"
-                      value={data.question}
-                      className="bg-gray-200 text-lg font-semibold outline-none"
+                      className="border-b border-gray-400 bg-gray-200 outline-none"
+                      value={data.response}
+                      placeholder="Fill in response here"
                     />
-                  </div>
-                </div>
+                  ) : isRadioResponse(data.response) ? (
+                    <div className="flex flex-col">
+                      {data.response.options.map(
+                        (optionObj: { id: string; option: string }) => (
+                          <label key={data.id} className="flex">
+                            {isRadioResponse(data.response) ? (
+                              <input
+                                className="mr-2"
+                                size={10}
+                                type="radio"
+                                name={optionObj.option}
+                                id={optionObj.id}
+                                checked={data.response.selected == optionObj.id}
+                              />
+                            ) : null}
 
-                {typeof data.response == "string" ? (
-                  <input
-                    type="text"
-                    className="border-b border-gray-400 bg-gray-200 outline-none"
-                    value={data.response}
-                    placeholder="Fill in response here"
-                  />
-                ) : isRadioResponse(data.response) ? (
-                  <div className="flex flex-col">
-                    {data.response.options.map((optionObj: any) => (
-                      <label className="flex">
-                        {isRadioResponse(data.response) ? (
+                            <input
+                              className="w-3/4 bg-gray-200 outline-none"
+                              type="text"
+                              value={optionObj.option}
+                            />
+                          </label>
+                        ),
+                      )}
+
+                      <div className="mt-3 flex ">
+                        <p className="text-sm opacity-50">
+                          Multiple Choice: Only one can be selected
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col">
+                      {data.response.map((optionObj: CheckBoxResponseModel) => (
+                        <label key={optionObj.id} className="flex">
                           <input
                             className="mr-2"
                             size={10}
-                            type="radio"
+                            type="checkbox"
                             name={optionObj.option}
                             id={optionObj.id}
-                            checked={data.response.selected == optionObj.id}
+                            checked={optionObj.selected}
                           />
-                        ) : null}
-
-                        <input
-                          className="w-3/4 bg-gray-200 outline-none"
-                          type="text"
-                          value={optionObj.option}
-                        />
-                      </label>
-                    ))}
-
-                    <div className="mt-3 flex ">
-                      <p className="text-sm opacity-50">
-                        Multiple Choice: Only one can be selected
-                      </p>
+                          <input
+                            className="w-3/4 bg-gray-200 outline-none"
+                            type="text"
+                            value={optionObj.option}
+                          />
+                          <div className="mr-4 flex grow justify-end"></div>
+                        </label>
+                      ))}
+                      <div className="mt-3 flex ">
+                        <p className="text-sm opacity-50">
+                          Multi Select: Multiple options can be selected
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col">
-                    {data.response.map((optionObj: CheckBoxResponseModel) => (
-                      <label className="flex">
-                        <input
-                          className="mr-2"
-                          size={10}
-                          type="checkbox"
-                          name={optionObj.option}
-                          id={optionObj.id}
-                          checked={optionObj.selected}
-                        />
-                        <input
-                          className="w-3/4 bg-gray-200 outline-none"
-                          type="text"
-                          value={optionObj.option}
-                        />
-                        <div className="mr-4 flex grow justify-end"></div>
-                      </label>
-                    ))}
-                    <div className="mt-3 flex ">
-                      <p className="text-sm opacity-50">
-                        Multi Select: Multiple options can be selected
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              ))}
           </div>
         )}
       </main>
