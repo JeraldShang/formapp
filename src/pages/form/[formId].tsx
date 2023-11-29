@@ -184,7 +184,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
         renderCount++;
 
         const newArray = [...prevArr];
-        newArray.forEach((questionObj, index) => {
+        newArray.forEach((questionObj) => {
           if (
             questionObj.id == questionId &&
             isRadioResponse(questionObj.response)
@@ -294,7 +294,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
         renderCount++;
 
         const newArray = [...prevArr];
-        newArray.forEach((questionObj, index) => {
+        newArray.forEach((questionObj) => {
           if (
             questionObj.id == questionId &&
             isCheckBoxResponse(questionObj.response)
@@ -416,8 +416,8 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
                 onClick={() => {
                   setSaveIsDisabled(true);
                   createFormMutate({
-                    formId: formId!,
-                    name: name!,
+                    formId: formId,
+                    name: name,
                     createdById: sessionData?.user.id,
                     formObject: questionData,
                   });
@@ -433,6 +433,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
 
         {questionData.map((data) => (
           <div
+            key={data.id}
             className="mt-4 flex w-1/2 flex-col gap-3 rounded-lg bg-gray-200 px-2 py-4"
             onChange={() => {
               enableSave();
@@ -475,7 +476,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
             ) : isRadioResponse(data.response) ? (
               <div className="flex flex-col">
                 {data.response.options.map((optionObj) => (
-                  <label className="flex">
+                  <label className="flex" key={optionObj.id}>
                     {isRadioResponse(data.response) ? (
                       <input
                         className="mr-2"
@@ -540,7 +541,7 @@ const Form: React.FC<FormDetailsProps> = ({ formId }) => {
             ) : (
               <div className="flex flex-col">
                 {data.response.map((optionObj: CheckBoxResponseModel) => (
-                  <label className="flex">
+                  <label className="flex" key={optionObj.id}>
                     <input
                       className="mr-2"
                       size={10}
